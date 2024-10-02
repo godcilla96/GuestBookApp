@@ -1,5 +1,5 @@
 ﻿using System;
-using Newtonsoft.Json;
+using Newtonsoft.Json; //Newtonsoft installterat för att läsa in jsondata 
 
 namespace GuestBookApp
 {
@@ -10,11 +10,12 @@ namespace GuestBookApp
 
         static void Main(string[] args)
         {
-            //här laddas menyn in med olika alternativ
+            //laddar in menyn med olika alternativ
             LoadEntriesFromFile();
             bool running = true;
             while (running)
             {
+                //menyn
                 Console.Clear();
                 Console.WriteLine("Välkommen till Gästboken");
                 Console.WriteLine("1. Visa alla inlägg");
@@ -26,7 +27,7 @@ namespace GuestBookApp
                 switch (choice)
                 {
                     case "1":
-                        ShowEntries();
+                        ShowEntries(true); // Här vill vi att användaren ska trycka på en tangent
                         break;
                     case "2":
                         AddEntry();
@@ -44,9 +45,8 @@ namespace GuestBookApp
             }
         }
 
-
         //koden för att visa alla sparade inlägg
-        static void ShowEntries()
+        static void ShowEntries(bool waitForKeyPress)
         {
             Console.Clear();
             Console.WriteLine("Gästbokens inlägg:\n");
@@ -61,16 +61,21 @@ namespace GuestBookApp
                     Console.WriteLine($"{i}. {guestBookEntries[i].Owner}: {guestBookEntries[i].Message}");
                 }
             }
-            Console.WriteLine("\nTryck på valfri tangent för att återgå till menyn.");
-            Console.ReadKey();
+
+            //väntar bara på en tangenttryckning om waitForKeyPress är true
+            if (waitForKeyPress)
+            {
+                Console.WriteLine("\nTryck på valfri tangent för att återgå till menyn.");
+                Console.ReadKey();
+            }
         }
 
         //lägg till inlägg
-            static void AddEntry()
-            {
+        static void AddEntry()
+        {
             Console.Clear();
             
-            // validering och felhantering genom whilte-loop, inläggsägare
+            //validering och felhantering genom while-loop, inläggsägare
             string owner;
             do
             {
@@ -82,7 +87,7 @@ namespace GuestBookApp
                 }
             } while (string.IsNullOrWhiteSpace(owner));
 
-            // validering och felhantering med while-loop, inläggsinnehåll
+            //validering och felhantering genom while-loop, inläggsinnehåll
             string message;
             do
             {
@@ -98,45 +103,46 @@ namespace GuestBookApp
             SaveEntriesToFile();
             Console.WriteLine("Inlägget har sparats. Tryck på valfri tangent för att återgå till menyn.");
             Console.ReadKey();
-            }
+        }
 
         //ta bort ett sparat inlägg från json-filen
-            static void RemoveEntry()
+        static void RemoveEntry()
+        {
+            Console.Clear();
+            ShowEntries(false);  //skickar med false för att inte vänta på tangenttryckning
+
+            if (guestBookEntries.Count == 0)
             {
-                Console.Clear();
-                ShowEntries();
-
-                if (guestBookEntries.Count == 0)
-                {
-                    Console.WriteLine("\nInga inlägg att ta bort. Tryck på valfri tangent för att återgå till menyn.");
-                    Console.ReadKey();
-                    return;
-                }
-
-                int index;
-                bool validIndex = false;
-
-                // Loop för att säkerställa att användaren anger ett giltigt index
-                do
-                {
-                    Console.Write("\nAnge index för inlägget som ska tas bort: ");
-                    if (int.TryParse(Console.ReadLine(), out index) && index >= 0 && index < guestBookEntries.Count)
-                    {
-                        validIndex = true;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Fel: Ogiltigt index. Försök igen.");
-                    }
-                } while (!validIndex);
-
-                guestBookEntries.RemoveAt(index);
-                SaveEntriesToFile();
-                Console.WriteLine("Inlägget har tagits bort. Tryck på valfri tangent för att återgå till menyn.");
-                Console.ReadKey();
+                Console.WriteLine("\nInga inlägg att ta bort. Tryck på valfri tangent för att återgå till menyn.");
+                Console.ReadKey();  //använder detta för att jag vill att användaren ska se att listan är tom
+                return;
             }
 
-       static void LoadEntriesFromFile()
+            int index;
+            bool validIndex = false;
+
+            //loop för att säkerställa att användaren anger ett giltigt index, felhantering
+            do
+            {
+                Console.Write("\nAnge index för inlägget som ska tas bort: ");
+                if (int.TryParse(Console.ReadLine(), out index) && index >= 0 && index < guestBookEntries.Count)
+                {
+                    validIndex = true;
+                }
+                else
+                {
+                    Console.WriteLine("Fel: Ogiltigt index. Försök igen.");
+                }
+            } while (!validIndex);
+
+            guestBookEntries.RemoveAt(index);
+            SaveEntriesToFile();
+            Console.WriteLine("Inlägget har tagits bort. Tryck på valfri tangent för att återgå till menyn.");
+            Console.ReadKey();
+        }
+
+        //laddar in json-filen med alla gästboksinlägg
+        static void LoadEntriesFromFile()
         {
             if (File.Exists(fileName))
             {
@@ -145,6 +151,7 @@ namespace GuestBookApp
             }
         }
 
+        //sparar inläggen till json-filen
         static void SaveEntriesToFile()
         {
             string json = JsonConvert.SerializeObject(guestBookEntries, Formatting.Indented);
