@@ -17,7 +17,7 @@ namespace GuestBookApp
             {
                 //menyn
                 Console.Clear();
-                Console.WriteLine("Välkommen till Gästboken");
+                Console.WriteLine("Cecilias gästbok");
                 Console.WriteLine("1. Visa alla inlägg");
                 Console.WriteLine("2. Lägg till ett inlägg");
                 Console.WriteLine("3. Ta bort ett inlägg");
